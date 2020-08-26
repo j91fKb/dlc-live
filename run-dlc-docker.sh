@@ -1,0 +1,1 @@
+docker container run --rm -it --gpus all --name dlc --env="DISPLAY" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" dlc bash
