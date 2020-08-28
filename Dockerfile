@@ -4,9 +4,9 @@ RUN apt-get update
 
 RUN apt-get install -y libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
 
-RUN apt-get install -y apt-utils wget git
+RUN apt-get install -y wget git
 
-RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh -O ~/anaconda.sh 
+RUN wget --quiet https://repo.anaconda.com/archive/Anaconda3-2020.07-Linux-x86_64.sh -O ~/anaconda.sh
 
 RUN /bin/bash ~/anaconda.sh -b -p /opt/conda && \
   rm ~/anaconda.sh && \
@@ -20,9 +20,14 @@ RUN /bin/bash ~/anaconda.sh -b -p /opt/conda && \
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /opt/conda/bin:$PATH
 
+RUN useradd -u 1000 -m worker
+RUN chown 1000:1000 /opt/conda
+
+USER worker
+
 RUN conda create -n dlc-live python=3.7 tensorflow-gpu==1.13.1 # if using GPU
 SHELL ["conda", "run", "-n", "dlc-live", "/bin/bash", "-c"]
 RUN pip install deeplabcut-live
-RUN mkdir /deeplabcut && cd /deeplabcut && git clone https://github.com/DeepLabCut/DeepLabCut-live.git
-
-CMD ["conda", "activate", "dlc-live"]
+RUN mkdir /home/worker/deeplabcut && cd /home/worker/deeplabcut && git clone https://github.com/DeepLabCut/DeepLabCut-live.git
+RUN conda init && echo "conda activate dlc-live" >> ~/.bashrc
+WORKDIR /home/worker/deeplabcut
